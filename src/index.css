@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-50: #fffdf0;
+  --color-gold-100: #fff9cc;
+  --color-gold-200: #ffef99;
+  --color-gold-300: #ffe066;
+  --color-gold-400: #ffd133;
+  --color-gold-500: #ffc107;
+  --color-gold-600: #e6ac00;
+  --color-gold-700: #cc9900;
+  --color-gold-800: #b38600;
+  --color-gold-900: #997300;
+  
+  --color-casino-red: #8b0000;
+  --color-casino-black: #0a0a0a;
+  --color-casino-dark: #1a1a1a;
+}
+
+@layer base {
+  body {
+    @apply bg-casino-black text-white font-sans;
+    background-image: radial-gradient(circle at 50% -20%, #4a0000 0%, #0a0a0a 70%);
+    background-attachment: fixed;
+  }
+}
+
+.gold-text {
+  @apply bg-linear-to-b from-gold-300 via-gold-500 to-gold-700 bg-clip-text text-transparent;
+}
+
+.gold-border {
+  border: 1px solid;
+  border-image: linear-gradient(to bottom, #ffd133, #b38600) 1;
+}
+
+.casino-card {
+  @apply bg-casino-dark/80 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden transition-all duration-300 hover:border-gold-500/50 hover:shadow-[0_0_20px_rgba(255,193,7,0.1)];
+}
+
