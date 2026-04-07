@@ -14,7 +14,7 @@ async function startServer() {
 
 let providersCache: any = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+const CACHE_DURATION = 1000 * 60 * 5; // Reduced to 5 minutes for easier debugging
 
 const MOCK_PROVIDERS = {
   status: "success",
@@ -43,6 +43,8 @@ app.get("/api/providers", async (req, res) => {
 
   const host = process.env.RAPIDAPI_HOST || "live-casino-slots-evolution-jili-and-50-plus-provider.p.rapidapi.com";
   const key = process.env.RAPIDAPI_KEY || "f63c48ae45msh98c9628f20c2ebfp194441jsn7dae61278bff";
+
+  console.log(`Fetching providers from ${host}...`);
 
   if (!host || host === "undefined") {
     return res.json(MOCK_PROVIDERS);
@@ -87,17 +89,21 @@ app.post("/api/get-game-url", async (req, res) => {
     const homeUrl = process.env.APP_URL || "https://betnex.co";
     const absoluteHomeUrl = homeUrl.startsWith('http') ? homeUrl : `https://${homeUrl}`;
 
+    const payload = {
+      username,
+      gameId: gameId || "874c49d5d915de9b82f66088f9794789",
+      lang: "en",
+      money: 0,
+      home_url: absoluteHomeUrl,
+      platform: 1,
+      currency: "INR"
+    };
+
+    console.log(`Requesting game URL from ${host} with payload:`, JSON.stringify(payload));
+
     const response = await axios.post(
       `https://${host}/getgameurl`,
-      {
-        username,
-        gameId: gameId || "874c49d5d915de9b82f66088f9794789",
-        lang: "en",
-        money: 0,
-        home_url: absoluteHomeUrl,
-        platform: 1,
-        currency: "INR"
-      },
+      payload,
       {
         headers: {
           "Content-Type": "application/json",

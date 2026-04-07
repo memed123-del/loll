@@ -58,6 +58,7 @@ export default function App() {
   const [gameUrl, setGameUrl] = useState<string | null>(null);
   const [usedUsername, setUsedUsername] = useState<string | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProviders();
@@ -82,6 +83,7 @@ export default function App() {
     setIsLaunching(true);
     setGameUrl(null);
     setUsedUsername(null);
+    setLaunchError(null);
 
     try {
       const res = await fetch('/api/get-game-url', {
@@ -89,19 +91,25 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameId: game.id || "874c49d5d915de9b82f66088f9794789" })
       });
+      
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error(`Server returned non-JSON response: ${res.status} ${res.statusText}. Check server logs.`);
+      }
+
       const data = await res.json();
       if (data.status === 'success' && data.data) {
         setGameUrl(data.data);
         setUsedUsername(data.usedUsername);
       } else {
         const errorMsg = data.message || data.error || "Gagal memuat game.";
-        alert(`${errorMsg} Silakan coba lagi nanti.`);
-        setSelectedGame(null);
+        setLaunchError(`API Error: ${errorMsg}`);
       }
-    } catch (err) {
-      console.error("Launch error", err);
-      alert("Terjadi kesalahan saat meluncurkan game.");
-      setSelectedGame(null);
+    } catch (err: any) {
+      console.error("Launch error:", err);
+      setLaunchError(`Terjadi kesalahan: ${err.message || "Koneksi terputus"}`);
     } finally {
       setIsLaunching(false);
     }
@@ -390,6 +398,24 @@ export default function App() {
                       className="w-full h-full border-none"
                       allow="autoplay; fullscreen"
                     />
+                  ) : launchError ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-6">
+                      <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center">
+                        <X className="w-10 h-10 text-red-500" />
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-black text-white uppercase tracking-tight">Gagal Meluncurkan Game</h4>
+                        <p className="text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
+                          {launchError}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => launchGame(selectedGame)}
+                        className="bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-3 rounded-xl transition-all border border-white/10"
+                      >
+                        Coba Lagi
+                      </button>
+                    </div>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <p className="text-red-500 font-bold">Gagal memuat game.</p>
